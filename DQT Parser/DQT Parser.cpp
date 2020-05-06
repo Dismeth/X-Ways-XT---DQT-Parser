@@ -1,9 +1,8 @@
 // DQT Parser.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#include "dqtParser.h" // vår egen custom
 #include "Windows.h"
 #include "X-Tension.h"
-#include "TinyEXIF.h"
 #include "string.h"
 #include "wchar.h"
 #include <string>
@@ -20,30 +19,6 @@
 std::string AppName = "DQT Parser";
 double AppVersion = 0.1;
 
-//class EXIFStreamBuffer : public TinyEXIF::EXIFStream {
-//public:
-//	explicit EXIFStreamBuffer(const uint8_t* buf, unsigned len)
-//		: it(buf), end(buf + len) {}
-//	bool IsValid() const override {
-//		return it != NULL;
-//	}
-//	const uint8_t* GetBuffer(unsigned desiredLength) override {
-//		const uint8_t* const itNext(it + desiredLength);
-//		if (itNext >= end)
-//			return NULL;
-//		const uint8_t* const begin(it);
-//		it = itNext;
-//		return begin;
-//	}
-//	bool SkipBuffer(unsigned desiredLength) override {
-//		return GetBuffer(desiredLength) != NULL;
-//	}
-//	unsigned StartNewSearch(unsigned desiredPos) override {
-//		return desiredPos;
-//	}
-//private:
-//	const uint8_t* it, * const end;
-//};
 
 
 DWORD gStartTime;
@@ -175,16 +150,19 @@ LONG __stdcall XT_ProcessItemEx(LONG nItemID, HANDLE hItem, void* lpReserved)
 {
 	// lage pointer
 	// Først få størrelsen
-	long itemSize = XWF_GetItemSize(nItemID);
+	INT64 itemSize = XWF_GetItemSize(nItemID);
 	// Lage en unik pointer slik at vi ikke mister kontroll
-	std::unique_ptr<BYTE> itemPtr = std::make_unique<BYTE>(itemSize);
+	//std::shared_ptr<BYTE> itemPtr = std::make_shared<BYTE>(itemSize);
+	BYTE* item_ptr{ nullptr };
+	item_ptr = new BYTE[itemSize];
 	// Får hvor stor filen faktisk er
-	long actualSize = XWF_Read(hItem, 0, itemPtr.get(), itemSize);
+	INT64 actualSize = XWF_Read(hItem, 0, item_ptr, itemSize);
 
-	TinyEXIF::EXIFInfo parseFile(itemPtr.get(), actualSize);
+	dqtParser parseFile(item_ptr, actualSize);
 
 
 	XWF_OutputMessage(L"Nå har vi prosessert et item.", 0);
+	delete[] item_ptr;
 	return 0;
 }
 
