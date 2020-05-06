@@ -36,10 +36,7 @@ public:
 		return (bool)file.seekg(desiredLength, std::ios::cur);
 	}
 	unsigned StartNewSearch(unsigned desiredPos) override {
-		previousPosition = file.tellg();
-		file.seekg(desiredPos);
-		std::cout << std::hex << "desiredPos: " << desiredPos << " at " << previousPosition << " is now at " << file.tellg() << std::dec << std::endl;
-		return previousPosition;
+		return desiredPos;
 	}
 private:
 	std::ifstream file;
