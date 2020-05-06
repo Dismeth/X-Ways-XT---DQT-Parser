@@ -39,7 +39,6 @@
 #include <cfloat>
 #include <vector>
 #include <algorithm>
-#include <iostream> // std::cout
 #include <fstream>  // std::ifstream kan fjernes etterpå
 
 #ifdef _MSC_VER
@@ -757,7 +756,7 @@ namespace TinyEXIF {
 	// We only require to hash the fields.
 	////
 	void EXIFInfo::parseDQT(EXIFStream& stream) {
-		std::cout << "We are inside" << std::endl;
+	
 		if (!stream.IsValid())
 			return;
 		uint8_t signature = 0xF0;
@@ -800,24 +799,24 @@ namespace TinyEXIF {
 				if ((buf_temp = stream.GetBuffer(2)) == NULL) // Lets find how big the table is
 					return;
 
-				std::cout << "Table nr: " << dqt_counter << std::endl;
+
 
 				uint16_t DQTsectionLength{ 0 };
 				DQTsectionLength = EntryParser::parse16(buf_temp, false); // Calculate the section length (table length) false means BIG ENDIAN
-				std::cout << "--- Found DQT. How big is it? \n";
+
 
 				std::vector <int> dqt_info{ 2,1,0 }; // [0] dqt_length, [1] dqt_info, [2] dqt_table 
 
 				dqt_info[2] = DQTsectionLength - dqt_info[0] - dqt_info[1];
 
 				if (dqt_info[2] >= 0) {
-					std::cout << DQTsectionLength << " -> valid" << std::endl;
+
 					// Open a data.bin and write to the file.
 					std::fstream test_write;
 					test_write.open("data.bin", std::ios::in | std::ios::out | std::ios::app | std::ios::binary);
 
 					if (test_write.is_open()) {
-						std::cout << " -- Open file success\n";
+
 						//test_write.clear();
 					}
 
@@ -837,36 +836,36 @@ namespace TinyEXIF {
 					dqt_counter++;
 				}
 				else {
-					std::cout << DQTsectionLength << " <- Not valid" << std::endl;
+
 				}
 			}
 			else if (startMarkerB == JM_START) {
 				const uint8_t* buf_temp{ 0 };
 				buf_temp = stream.GetBuffer(1);
 				if (buf_temp[0] == JM_DQT) {
-					std::cout << "WE FOUND ANOTHER ONE!" << std::endl;
+
 					const uint8_t* buf_temp{ 0 };
 					// How many DQT tables are there?
-					std::cout << "Table nr: " << dqt_counter << std::endl;
+
 					if ((buf_temp = stream.GetBuffer(2)) == NULL) // Lets find how big the table is
 						return;
 
 					uint16_t DQTsectionLength{ 0 };
 					DQTsectionLength = EntryParser::parse16(buf_temp, false); // Calculate the section length (table length) false means BIG ENDIAN
-					std::cout << "--- Found DQT. How big is it? \n";
+
 
 					std::vector <int> dqt_info{ 2,1,0 }; // [0] dqt_length, [1] dqt_info, [2] dqt_table 
 
 					dqt_info[2] = DQTsectionLength - dqt_info[0] - dqt_info[1];
 
 					if (dqt_info[2] >= 0) {
-						std::cout << DQTsectionLength << " -> valid" << std::endl;
+
 						// Open a data.bin and write to the file.
 						std::fstream test_write;
 						test_write.open("data.bin", std::ios::in | std::ios::out | std::ios::app | std::ios::binary);
 
 						if (test_write.is_open()) {
-							std::cout << " -- Open file success\n";
+
 							//test_write.clear();
 						}
 
@@ -886,7 +885,7 @@ namespace TinyEXIF {
 						dqt_counter++;
 					}
 					else {
-						std::cout << DQTsectionLength << " <- Not valid" << std::endl;
+
 					}
 				}
 			}
@@ -945,8 +944,7 @@ namespace TinyEXIF {
 			case JM_SOI:
 				break;
 			case JM_DQT:
-				std::cout << "Trying to run function" << std::endl;
-				parseDQT(stream);
+				//parseDQT(stream);
 				break;
 			case JM_SOS:	// start of stream: and we're done
 			case JM_EOI:	// no data? not good
