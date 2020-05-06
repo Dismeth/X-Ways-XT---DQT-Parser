@@ -1,8 +1,6 @@
 #include "dqtParser.h"
 #include <fstream> // write to files
-#include <string>
-#include <iomanip>
-#include <sstream>
+#include <string> // used for output to csv
 
 // Enum to make values seem readable
 enum JPEG_MARKERS {
@@ -117,9 +115,21 @@ uint16_t dqtParser::parse16(const uint8_t* buf, bool intel) {
 
 
 std::string dqtParser::convertToHex(const uint8_t byte) {
-	std::ostringstream temp_file;
-	temp_file << std::hex << std::setfill('0') << std::setw(2) << byte;
-	return temp_file.str();
+	std::string temp_file{ "" };
+	char hex_string[4];
+	if (byte < 10) {
+		temp_file = "0" + std::to_string(byte);
+	}
+	else if (byte < 16) {
+		sprintf_s(hex_string, "%X", byte);
+		temp_file += "0";
+		temp_file += hex_string;
+	}
+	else {
+		sprintf_s(hex_string, "%X", byte);
+		temp_file += hex_string;
+	}
+	return temp_file;
 }
 
 
