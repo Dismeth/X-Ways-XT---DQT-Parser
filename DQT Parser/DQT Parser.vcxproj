@@ -149,13 +149,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DQT Parser.cpp" />
-    <ClCompile Include="TinyEXIF.cpp" />
-    <ClCompile Include="tinyxml2.cpp" />
+    <ClCompile Include="dqtParser.cpp" />
     <ClCompile Include="X-Tension.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="TinyEXIF.h" />
-    <ClInclude Include="tinyxml2.h" />
+    <ClInclude Include="dqtParser.h" />
     <ClInclude Include="X-Tension.h" />
   </ItemGroup>
   <ItemGroup>
