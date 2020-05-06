@@ -88,6 +88,9 @@ dqtParser::dqtParser(const uint8_t* data, unsigned length)
 }
 
 // Methods
+//
+// Move the pointer so we can continue reading the buffer. It just keeps track of offset and pointer and that we don't
+// go out of bounds (< length).
 const uint8_t* dqtParser::getBuffer(unsigned size = 1) {
 	const uint8_t* buffer(current_ptr);
 	if (size + current_offset >= length) {
@@ -98,6 +101,7 @@ const uint8_t* dqtParser::getBuffer(unsigned size = 1) {
 	return buffer;
 }
 
+// just skip the bytes to save time
 bool dqtParser::skipBuffer(unsigned size = 1) {
 	if (size + current_offset >= length) {
 		return false;
@@ -107,13 +111,14 @@ bool dqtParser::skipBuffer(unsigned size = 1) {
 	return true;
 }
 
+// Parse 2x bytes either little endian (intel = true) or big endian 
 uint16_t dqtParser::parse16(const uint8_t* buf, bool intel) {
 	if (intel)
 		return ((uint16_t)buf[1] << 8) | buf[0];
 	return ((uint16_t)buf[0] << 8) | buf[1];
 }
 
-
+// Convert hex to readable ASCII hex representation
 std::string dqtParser::convertToHex(const uint8_t byte) {
 	std::string temp_file{ "" };
 	char hex_string[4];
@@ -134,6 +139,8 @@ std::string dqtParser::convertToHex(const uint8_t byte) {
 
 
 // write all data to a file.
+// TODO: fikse custom location
+// fikse filidentifikator? Hash? Navn? Casenummer?
 bool dqtParser::writeToFile() {
 	char separator{ ';' };
 	std::fstream output_file;

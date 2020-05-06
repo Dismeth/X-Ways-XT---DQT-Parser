@@ -1,6 +1,6 @@
 // DQT Parser.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-#include "dqtParser.h" // vår egen custom
+#include "dqtParser.h" // Our custom DQT parser class
 #include "Windows.h"
 #include "X-Tension.h"
 #include "string.h"
@@ -11,8 +11,8 @@
 #include <iostream> // std::cout
 #include <fstream>  // std::ifstream
 #include <vector>   // std::vector
-#include <iomanip>  // std::setprecision
-#include <memory> // smartpointers
+//#include <iomanip>  // std::setprecision
+#include <memory> // smartpointers not in use
 
 
 // Global variables
@@ -29,7 +29,7 @@ LONG __stdcall XT_Init(DWORD nVersion, DWORD nFlags, HANDLE hMainWnd,
 	void* lpReserved)
 {
 	XT_RetrieveFunctionPointers();
-	
+
 	XWF_OutputMessage(L"DQT Parser initialized. Version 0.1", 0);
 	return 1;
 }
@@ -48,6 +48,12 @@ LONG __stdcall XT_Done(void* lpReserved)
 
 LONG __stdcall XT_About(HANDLE hParentWnd, void* lpReserved)
 {
+	//std::shared_ptr<LPWSTR> filePathMessage_ptr = std::make_shared<LPWSTR>(100);
+	//std::shared_ptr<LPWSTR> filePath_ptr = std::make_shared<LPWSTR>(100);
+	//LPWSTR filePathMsg{ new WCHAR[255] };
+	//LPWSTR filePath{ new WCHAR[255] };
+	//wcscat_s(filePathMsg,10, L"What\00\00");
+	//XWF_GetUserInput(filePathMsg, filePath,255,0);
 	XWF_OutputMessage(L"DQT Parser about. God påske alle sammen! Mvh Såvi :) :)", 0);
 	return 0;
 }
