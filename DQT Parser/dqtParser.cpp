@@ -1,5 +1,10 @@
 #include "dqtParser.h"
+#include <fstream> // write to files
+#include <string>
+#include <iomanip>
+#include <sstream>
 
+// Enum to make values seem readable
 enum JPEG_MARKERS {
 	JM_START = 0xFF,
 	JM_SOF0 = 0xC0,
@@ -73,15 +78,18 @@ enum dqtParserErrorCodes {
 	PARSE_FAILED = 2, // Something went wrong
 };
 
+
+// Constructors
 dqtParser::dqtParser()
-	: data(nullptr), length(0){
+	: data(nullptr), length(0), data_end(nullptr), current_offset(0), current_ptr(nullptr), dqt_table_id(0){
 }
 
 dqtParser::dqtParser(const uint8_t* data, unsigned length)
-	: data(data), length(length), data_end(data+length), current_offset(0), current_ptr(data){
+	: data(data), length(length), data_end(data+length), current_ptr(data){
 	parseData();
 }
 
+// Methods
 const uint8_t* dqtParser::getBuffer(unsigned size = 1) {
 	const uint8_t* buffer(current_ptr);
 	if (size + current_offset >= length) {
@@ -92,13 +100,45 @@ const uint8_t* dqtParser::getBuffer(unsigned size = 1) {
 	return buffer;
 }
 
+bool dqtParser::skipBuffer(unsigned size = 1) {
+	if (size + current_offset >= length) {
+		return false;
+	}
+	current_offset += size;
+	current_ptr += size;
+	return true;
+}
+
 uint16_t dqtParser::parse16(const uint8_t* buf, bool intel) {
 	if (intel)
 		return ((uint16_t)buf[1] << 8) | buf[0];
 	return ((uint16_t)buf[0] << 8) | buf[1];
 }
 
+
+std::string dqtParser::convertToHex(const uint8_t byte) {
+	std::ostringstream temp_file;
+	temp_file << std::hex << std::setfill('0') << std::setw(2) << byte;
+	return temp_file.str();
+}
+
+
+// write all data to a file.
 bool dqtParser::writeToFile() {
+	char separator{ ';' };
+	std::fstream output_file;
+	output_file.open("c://data.csv", std::ios::in | std::ios::out | std::ios::app);
+	for (int i = 0; i < all_dqt_tables.size(); i++) {
+		output_file << all_dqt_tables.at(i).id				<< separator;
+		output_file << all_dqt_tables.at(i).offset			<< separator;
+		output_file << all_dqt_tables.at(i).sectionLength	<< separator;
+		output_file << all_dqt_tables.at(i).dqt_info		<< separator;
+		const uint8_t* temp_ptr = all_dqt_tables.at(i).dqt;
+		for (int j = 0; j < all_dqt_tables.at(i).sectionLength-3; j++)
+			output_file << convertToHex(temp_ptr[j]);
+		output_file << "\n";
+	}
+	return true;
 }
 
 int dqtParser::parseData() {
@@ -108,20 +148,34 @@ int dqtParser::parseData() {
 		return PARSE_INVALID;
 
 	while (buf = getBuffer()) {
+
 		if (buf[0] == JM_START && buf[1] == JM_DQT) {
-			// hoppe over en
-			getBuffer();
-			// hva får vi her?
-
-			int sectionLength = parse16(getBuffer(2), false);
+			// hoppe over en byte
+			skipBuffer();
 			
-
-		
+			
+			// hvor stor er tabellen? Må leses i big endian (ikke INTEL)
+			int sectionLength = parse16(getBuffer(2), false);
+			// Section length består av lengde (2 bytes) + 
+			// 67 bytes = Length (2B) + QT info (1B) + QT Table (n B)	=>		QT Table (64 B) =>			 n = 64 bytes
+			// Marker : 2 bytes (0xff, 0xdb)
+			// Length : 2 bytes (0x00, 0x43) example
+			// QT Info: 1 byte (bit 0..3 number of QT, bit 4..7 precision of QT. 0 = 8 bit, otherwise 16 bit).
+			// Bytes  : n bytes (This gives QT values, n = 64*(precision + 1)
+			int dqt_info = getBuffer()[0];
+			dqt_table table{ dqt_table_id , current_offset-4, sectionLength, dqt_info, getBuffer(sectionLength-3) };
+			// add the struct into a vector
+			all_dqt_tables.push_back(table);
+			// increment the amount of tables found
+			dqt_table_id++;
 		}
 
 
 	}
-	
-	return PARSE_SUCCESS;
-}
 
+	// Vi har parset gjennom hele filen og kan skrive resultat til fil
+	if (writeToFile())
+		return PARSE_SUCCESS;
+	else
+		return PARSE_FAILED;
+}
